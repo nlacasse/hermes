@@ -4,6 +4,15 @@
             [hermes.edge :as e]
             [hermes.vertex :as v]))
 
+(deftest test-delete
+  (g/open)
+  (let [u (v/create!)
+        w (v/create!)
+        a (e/connect! u w "test")
+        a-id (e/get-id a)]
+    (e/delete! a)
+    (is (=  nil (e/find-by-id a-id)))))
+
 (deftest test-simple-property-mutation
   (g/open)
   (let [v1 (v/create! {:name "v1"})
@@ -30,7 +39,7 @@
         v2 (v/create! {:name "v2"})
         edge (e/connect! v1 v2 "test" {:a 1 :b 2 :c 3})
         prop-map (e/prop-map edge)]
-    (is (= {:a 1 :b 2 :c 3} (dissoc prop-map :id)))))
+    (is (= {:a 1 :b 2 :c 3} (dissoc prop-map :__id__ :__label__)))))
 
 (deftest test-endpoints
   (g/open)
@@ -38,6 +47,17 @@
         v2 (v/create! {:name "v2"})
         edge (first (e/upconnect! v1 v2 "connexion"))]
     (is (= ["v1" "v2"] (map #(e/get-property % :name) (e/endpoints edge))))))
+
+(deftest test-refresh
+  (g/open)
+  (let [v1 (v/create! {:name "v1"})
+        v2 (v/create! {:name "v2"})
+        edge (first (e/upconnect! v1 v2 "connexion"))
+        fresh-edge (e/refresh edge)]
+
+    (is fresh-edge)
+    (is (= (.getId edge) (.getId fresh-edge)))
+    (is (= (e/prop-map edge) (e/prop-map fresh-edge)))))
 
 (deftest test-upconnect!
   (testing "Upconnecting once"

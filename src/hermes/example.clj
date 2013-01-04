@@ -3,12 +3,14 @@
             [hermes.vertex :as v]
             [hermes.edge   :as e]
             [hermes.type   :as t]))
+(g/open 
+    {:storage {:backend "cassandra"
+               :hostname "localhost"}})
 
-(g/open)
-
+(def fail (g/transact! (v/create! {:fail [1]})))
 
 (g/transact! (t/create-vertex-key-once :name-a String {:unique true
-                                                     :indexed true}))
+                                                       :indexed true}))
 
 (def Zack (g/transact! (first (v/upsert! :name-a
                                          {:name-a "Zack"

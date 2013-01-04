@@ -1,12 +1,12 @@
 (ns hermes.element
-  (:import (com.tinkerpop.blueprints Element)))
+  (:import (com.tinkerpop.blueprints Element))
+  (require [hermes.kryo :as kryo]))
 
 (defprotocol HermesElement
   "Tinkerpop element"
   (get-keys [this])
   (get-id [this])
   (get-property [this key])
-  (prop-map [this])
   (remove-property! [this key])
   (set-property! [this key value])
   (set-properties! [this data]))
@@ -15,7 +15,7 @@
   HermesElement
 
   (get-keys [this]
-    (.getPropertyKeys this))
+    (set (map keyword (.getPropertyKeys this))))
   
   (get-id [this]
     (.getId this))
@@ -26,28 +26,14 @@
     ;;user's id for example. 
     (when (not= value (get-property this (name key)))
       (.removeProperty this (name key)) ;;Hacky work around! Yuck!
-      (.setProperty this (name key) value)))
+      (.setProperty this (name key) (kryo/prepare value))))
   
   (set-properties!  [this data]
     (doseq [[k v] data] (set-property! this (name k) v))
     this)
 
   (get-property [this key]
-    (.getProperty this (name key)))
+    (kryo/revert (.getProperty this (name key))))
 
   (remove-property! [this key]
-    (.removeProperty this (name key)))
-  
-  (prop-map [this]
-    (into {:id (get-id this)}
-          (map
-           #(vector (keyword %1) (get-property this %1))              
-           (get-keys this)))))
-
-;; There is a way of doing this that involves reify or proxy that
-;; would make (:name (v/create {:name "Zack"})) work. 
-;; (extend Element
-;;   clojure.lang.ILookup
-;;   {:valAt (fn
-;;             ([this k not-found] nil)
-;;             ([this k] (.getProperty this (name k))))})  
+    (.removeProperty this (name key))))
