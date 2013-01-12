@@ -9,6 +9,7 @@
                  ["oracle" "http://download.oracle.com/maven/"]] 
   :dependencies [[org.clojure/clojure "1.4.0"]
                  [com.tinkerpop.blueprints/blueprints-core "2.2.0"]
+                 [com.tinkerpop.blueprints/blueprints-neo4j-graph "2.2.0"]
                  [com.tinkerpop.gremlin/gremlin-java "2.2.0"]
                  [com.thinkaurelius.titan/titan "0.2.0-SNAPSHOT"]]
   :profiles {:dev {:plugins [[lein-kibit "0.0.7"]]}})
